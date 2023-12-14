@@ -4,15 +4,13 @@
     "dev": "wrangler dev src/index.ts",
     "dev:remote": "wrangler dev src/index.ts --remote",
     "deploy": "wrangler deploy --minify src/index.ts",
-    "test": "vitest run",
-    "test:coverage": "vitest run  --coverage"
   },
   "dependencies": {
     "@cloudflare/ai": "1.0.36",
     "@hono/swagger-ui": "0.2.0",
     "@hono/zod-openapi": "0.9.0",
     "hono": "3.10.3",
-    "langchain": "0.0.198"
+    "langchain": "0.0.195"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "4.20231121.0",

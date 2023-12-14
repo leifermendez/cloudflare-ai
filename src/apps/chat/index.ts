@@ -1,32 +1,29 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Bindings } from "@src/bindings";
-import { buildLlamaChain } from "@src/chains/llama_chain";
-import { buildOpenAIChain } from "@src/chains/openai_chain";
-import llamaRoute from "./routes/llama";
-import openAiRoute from "./routes/openai";
+import { buildLlamaChainQA } from "@src/chains/llama_chain_qa";
 
 const app = new OpenAPIHono<{ Bindings: Bindings }>();
 
-app.openapi(llamaRoute, async (c) => {
-  const { message } = await c.req.json();
-  const chain = await buildLlamaChain({
+app.post("/llama", async (c) => {
+  const { question, name } = await c.req.json();
+
+  if(!question) return c.json({error:'QUESTION'})
+  if(!name) return c.json({error:'NAME'})
+
+  const chain = await buildLlamaChainQA({
     cloudflareAccountId: c.env.CLOUDFLARE_ACCOUNT_ID,
     cloudflareApiToken: c.env.CLOUDFLARE_API_TOKEN,
-    baseUrl: c.env.AI_GATEWAY_URL,
+    ai:c.env.AI,
+    vectorize:c.env.VECTORIZE_INDEX,
+    name
   });
-  const inputs = { input: message };
-  const responseMsg = await chain.invoke(inputs);
-  return c.json({ message: responseMsg }, 201);
+
+  console.log(`[c.env.VECTORIZE_INDEX]:`,c.env.VECTORIZE_INDEX)
+  
+  const result = await chain.invoke(question, name);
+  return c.json(result, 201);
 });
 
-app.openapi(openAiRoute, async (c) => {
-  const { message } = await c.req.json();
-  const chain = await buildOpenAIChain({
-    openAIApiKey: c.env.OPENAI_API_KEY,
-  });
-  const inputs = { input: message };
-  const responseMsg = await chain.invoke(inputs);
-  return c.json({ message: responseMsg }, 201);
-});
+
 
 export default app;
